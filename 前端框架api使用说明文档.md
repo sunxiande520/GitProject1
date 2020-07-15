@@ -1,8 +1,8 @@
 ## 前端框架api使用说明文档 （修改中）
 
-- [ ] 添加列表
+- [x] 添加列表
 
-- [ ] 添加简单说明
+- [x] 添加简单说明
 
 - [ ] 添加简单示例
 
@@ -137,7 +137,7 @@
 现金额大写转换函数 
 
 ```javascript
-`upDigit(168752632)`-->"人民币壹亿陆仟捌佰柒拾伍万贰仟陆佰叁拾贰元整"
+upDigit(168752632) => "人民币壹亿陆仟捌佰柒拾伍万贰仟陆佰叁拾贰元整"
 ```
 
 ##### 3.`formatText(str, size=3, delimiter='-')`
@@ -492,7 +492,12 @@ getDatesFromWeek(2020, 20)
 
 ##### 14.`getNowDate()`
 
+获取当前时间字符串
 
+```javascript
+getNowDate()
+"2020-07-15 14:01:28"
+```
 
 ##### 15.`addDate(date, days)` 
 
@@ -505,11 +510,7 @@ addDate('2020-11-1', -2)
 => "2020-10-30"
 ```
 
-##### 16.`Date.prototype.format` 
-
-日期格式化
-
-##### 17.`GetDateStr = function (date, AddDayCount)` 
+##### 16.`GetDateStr = function (date, AddDayCount)` 
 
  获取AddDayCount天后的日期
 
@@ -522,7 +523,7 @@ GetDateStr("2020-07-25",10)
 => "2020-08-04"
 ```
 
-##### 18.`datedifference(sDate1, sDate2)` 
+##### 17.`datedifference(sDate1, sDate2)` 
 
 计算两个时间相差天数
 
@@ -531,7 +532,7 @@ datedifference("2020-08-04", "2020-08-06")
 => 2
 ```
 
-##### 19.`timestampToDate(shijian)` 
+##### 18.`timestampToDate(shijian)` 
 
 时间戳(10位)转时间
 
@@ -540,7 +541,7 @@ timestampToDate(Date.parse("2020-08-04")/1000)
 "2020-08-04 08:00:00"
 ```
 
-##### 20.`getNMYear(time, n)` 
+##### 19.`getNMYear(time, n)` 
 
 获取当月后n个月的年份,time只能是 YYYY-MM-DD
 
@@ -553,7 +554,7 @@ getNMYear("2020-08-04", 22)
 =>2022
 ```
 
-##### 22.`getNMCYear(time, n)` 
+##### 20.`getNMCYear(time, n)` 
 
 获取当月后n个月的完整年月日,time只能是 YYYY-MM-DD
 
@@ -572,67 +573,355 @@ getNMCYear("2020-08-04", -2)
 
 
 
+#### 数组方法
 
 
 
+##### 1.`uniqArr(array)` 
 
+数组去重
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##### 1.`getObjFromArrayById`
-
-##### 2.`getObjFromArrayByField`
-
-##### 3.`getJsonFromListForm(listId, 'contentForm')`
-
-##### 4.`toThousandsfomatFloat(sums.priceTotal,6)`
-
-##### 5.`toThousandsfomatFloat(src, pos)` 
-
-##### 6.`summaryFields(updateFields, array)`
+```javascript
+uniqArr([1,2,3,'3',3,4])
+=> [1, 2, 3, "3", 4]
 ```
 
+##### 2.`groupBy(array, f)`
+
+将数组按条件分组,返回数组
+
+```js
+const a = [{class:'1',name:'zhangsan',age:8},{class:'1',name:'lishi',age:7},{class:'2',name:'lebulong',age:7},{class:'2',name:'mayu',age:8}]
+//安class分组
+groupBy(a,data=>data.class)
+=> 
+[[{"class":"1","name":"zhangsan","age":8},{"class":"1","name":"lishi","age":7}],[{"class":"2","name":"lebulong","age":7},{"class":"2","name":"mayu","age":8}]]
 ```
+
+##### 3.groupBy2Arr(array, f)
+
+同groupBy,返回数组
+
+##### 4.groupByObj(array, f) 
+
+分组,返回对象
+
+```javascript
+groupByObj(a,data=>data.class)
+=>
+{'1':[{"class":"1","name":"zhangsan","age":8},{"class":"1","name":"lishi","age":7}],
+'2':[{"class":"2","name":"lebulong","age":7},{"class":"2","name":"mayu","age":8}]}
+```
+
+##### 5.groupByFiled(array, f) 
+
+同groupByObj
+
+removeRepeatArray(arr) 
+
+```javascript
+removeRepeatArray([13,333,33,33])
+=> [13, 333, 33]
+a = {name:'xixi'}
+removeRepeatArray([1,2,3,a,a])
+=> [1, 2, 3, {…}]
+```
+
+##### 6.getNewArr(dataArr, repeat, minChar) 
+
+数组根据某个字段或某几个字段去重
+
+```javascript
+var b = [{class:'1',name:'zhangsan',age:8},{class:'1',name:'lishi',age:7},{class:'2',name:'lebulong',age:8},{class:'2',name:'mayu',age:8}]
+
+getNewArr(b,['class','age'])
+=> [ {class: "1", name: "zhangsan", age: 8}, {class: "1", name: "lishi", age: 7}, {class: "2", name: "lebulong", age: 8}]
+```
+
+##### 7.Array.prototype.uniquelize
+
+数组中元素根据某一字段的值排序（根据up升降排序,默认升序）
+
+```javascript
+[1,2,4,5,6,2,4].uniquelize ()
+=> [1, 2, 4, 5, 6]
+```
+
+##### 8.Array.complement
+
+两个集合的补集
+
+```javascript
+var a = [1,2,3,4];
+var b = [3,4,5,6];
+Array.complement(a,b)
+```
+
+##### 9.Array.prototype.contains(obj)
+
+判断数组是否包含某一元素
+
+```javascript
+[3,4,5,6].contains(3) =>true
+```
+
+##### 10.Array.intersect(a, b) 
+
+两个集合的交集
+
+```javascript
+var a = [1,2,3,4];
+var b = [3,4,5,6];
+Array.intersect(a,b)
+```
+
+##### 11.Array.minus 
+
+两个集合的差集
+
+```javascript
+var a = [1,2,3,4];
+var b = [3,4,5,6];
+alert(Array.minus(a,b));
+```
+
+##### 12.Array.union = function (a, b) 
+
+求两个集合的并集
+
+```javascript
+var a = [1,2,3,4]
+var b = [3,4,5,6];
+Array.union(a,b);
+```
+
+##### 13.isArray(obj) 
+
+是否是数组
+
+##### 14.isInArray(arr, value)   ??
+
+判断一个元素是否存在于一个数组中
+
+##### 15.posInArray(arr, value) {
+
+判断一个元素是否存在于一个数组中
+
+##### 16.isInArray3(arr, value)
+
+判断元素是否存在于数组中
+
+##### 17 removeArray(val) 
+
+删除数组指定的某个元素
+
+##### 18.pushArrayBypos(dataArray, obj, pos)
+
+在数组指定的位置添加一条数据,pos为位置
+
+##### 19.updateJsonArrayByPos(dataArray, obj, pos)
+
+替换数组指定位置的元素
+
+##### 20.function objsum(array, key)
+
+ 对数组对象的某一字段求和
+
+```javascript
+a = [ {class: "1", name: "zhangsan", age: 8}, {class: "1", name: "lishi", age: 7}, {class: "2", name: "lebulong", age: 8}];
+objsum(a,'age')
+=> 23
+```
+
+
+
+##### 21.sortObjectArray(objArr, keyArr, type) 
+
+ 对JSON对象字符串数组进行多字段（多列）排序
+
+-  objArr: 目标数组
+-  keyArr: 排序字段，以数组形式传递
+-  type：排序方式，undefined以及asc都是按照升序排序，desc按照降序排序
+
+##### 22.updateJsonArrayById(dataArray, obj)
+
+根据位id添修改JSON数据(其实是替换)
+
+```javascript
+updateJsonArrayById([{id:1,title:'name'},{id:2,title:'hh'}], {id:1,title:'age'})
+=> [{id:1,title:'age'},{id:2,title:'hh'}]
+```
+
+##### 23.updateJsonArrayByField(dataArray, obj, field)
+
+根据字段添修改JSON数据 ,如果没有匹配的,就添加在末尾
+
+```javascript
+updateJsonArrayByField([{id:1,title:'name'},{id:2,title:'hh'}], {id:1,title:'age'},'title')
+=> [{id:1,title:'age'},{id:2,title:'hh'}]
+```
+
+##### 24.mergeTwoArray(dataArray, dataArray2, field) 
+
+两个数组合并,此方法会修改第一个参数,并已经 field 字段去重
+
+##### 25.mergeTwoNewArray(dataArray, dataArray2, field, deleteIds)
+
+ 同上,删除id值在deleteIds的元素
+
+##### 26.removeJsonArrayByPos(dataArray, pos) 
+
+根据位置删除JSON数据,此方法会修改原数组,返回修改后的数组
+
+##### 27.removeJsonArrayByPosArr(dataArray, posArr) 
+
+根据传入的posArr,返回新的数组
+
+##### 28.getPosArrayById(dataArray, id) 
+
+根据id得到对象在数组中的位置,找不到返回-1
+
+##### 29.getLastPosByField(dataArray, field, value) 
+
+根据field的值给出最后一个符合条件的对象的位置,找不到返回-1
+
+##### 30.getLastSonPosArrayById(dataArray, id) 
+
+ 根据id得到对象的最后一个儿子在数组中的位置
+
+##### 31.getJsonArrayById(dataArray, id) 
+
+ 根据id获取数据
+
+##### 32.getObjFromArrayById(dataArray, id) {
+
+  根据id获取数据
+
+##### 33.getObjFromArrayByField(dataArray, field, value) {
+
+  根据field获取数据,取不到返回空对象{}
+
+##### 34.getOneObjFromArrayByCondition(dataArray, conditions) 
+
+根据多个字段获取一个数据,取不到返回false
+
+```javascript
+a = [ {class: "1", name: "zhangsan", age: 8}, {class: "1", name: "lishi", age: 7}, {class: "2", name: "lebulong", age: 8}];
+objsum(a,{class: "1", name: "zhangsan"})
+=> {class: "1", name: "zhangsan", age: 8}
+```
+
+##### 35.deleteJsonArrayById(dataArray, id) 
+
+根据id属性删除数据,返回删除后的数组,同时会修改原数组
+
+##### 36.deleteArrayByFiled(dataArray, value, filed) 
+
+根据filed的值来删除数据,返回删除后的数组,同时会修改原数组
+
+##### 37.deleteArrayByValue(dataArray, value) {
+
+根据value的值来删除数据,返回删除后的数组,同时会修改原数组
+
+##### 38.getDeleteArrayIdsByFiled(dataArray, value, filed) {
+
+根据filed的值获取删除数据的id
+
+```javascript
+//获取一年级学生的id
+a = [ {class: "1", name: "zhangsan", age: 8,id:1}, {class: "1", name: "lishi", age: 7,id:2}, {class: "2", name: "lebulong", age: 8,id:4}];
+getDeleteArrayIdsByFiled(a,{class: "1", name: "zhangsan"})
+=> [1,2]
+```
+
+##### 39.isEqualOfTwoObject(obj1, obj2, fieldArray) 
+
+比较两个对象的多个字段是否相等
+
+##### 40.isIncludeOfArray(array, obj, fieldArray) {
+
+判断数组对象中是否有对应项
+
+```javascript
+//获取一年级学生的id
+a = [ {class: "1", name: "zhangsan", age: 8,id:1}, {class: "1", name: "lishi", age: 7,id:2}, {class: "2", name: "lebulong", age: 8,id:4}];
+isIncludeOfArray(a,{class: "1", name: "zhangsan",age:'9'},['class','name'])
+=> {class: "1", name: "zhangsan", age: 8,id:1} 
+```
+
+##### 41.deleteObjectById(dataArray, id) 
+
+删除自己后自己的后代元素(通过pid关联后代)
+
+##### 42.getSonArray(dataArray, id) {
+
+  根据id获取所有的子对象数组，这里只是儿子，不是子孙
+
+##### 43.isFromJsonByField(dataArray, field, value) 
+
+判断dataArray中是否存在 指定字段filed和字段对应的值 的对象
+
+
+
+
+
+#### 其他方法
+
+
+
+##### 1.randomRange(start, end) 
+
+范围随机数
+
+##### 2.browserInfo() {
+
+浏览器信息
+
+```javascript
+browserInfo() => 
+{
+	isMobi,// 是否是手机浏览器
+	isWeiXin,//是否为微信浏览器
+	isAppleMobileDevice,//判断是否苹果移动设备访问
+	isAndroidMobileDevice,//判断是否安卓移动设备访问
+	isMobileUserAgent,//判断是否移动设备访问
+	type//浏览器类型. "IE"|"Firefox"|"Chrome"|"Safari"
+}
+```
+
+##### 3.getweb() 
+
+浏览器信息,返回"IE"|"Firefox"|"Chrome"|"Safari"
+
+##### 4.toUrl(url, self, clearRole=true, obj) {
+
+ 跳转链接,url:下一个页面的url,self:是否是在本页面跳转,clearRole:清除角色信息,obj:url参数
+
+##### 5.uuid()
+
+随机码,可以用做id
+
+```javascript
+uuid()
+"f38dd965-0b6c-4242-abe4-c085bac42581"
+```
+
+##### 6.isIEBroswer()
+
+判断是否是IE
+
+##### 7..$("textarea").autoHeight()
+
+textarea高度自适应
+
+##### 8.String.prototype.colorHex = function () {
+
+RGB颜色转换为16进制
+
+##### 9.String.prototype.colorRgb = function () {
+
+16进制颜色转为RGB格式
+
+##### 10.GetUrlRelativePath() 
+
+ 获取当前相对路径的方法
