@@ -1,0 +1,749 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width initial-scale=1'>
+<title>前端框架api使用说明文档</title></head>
+<body><h2>前端框架api使用说明文档</h2>
+<div>[TOC]</div>
+<p>&nbsp;</p>
+<h3>核心框架API：</h3>
+<h4>列表方法：</h4>
+<h5>1.<code>getListBlockData(listId, fomId)</code></h5>
+<ul>
+<li>根据配置自动从获取数据，渲染列表</li>
+<li>表格可配置分页，系统会自动渲染分页，添加分页事件</li>
+<li>可配置基础数据，系统自动渲染（下拉框）</li>
+<li>可配置接口筛选，排序</li>
+<li>渲染页面前后会调用berfor、after生命周期方法</li>
+<li>如果没有配置列表模板，第一次运行会从页面获取模板并保存到配置</li>
+
+</ul>
+<pre><code class='language-javascript' lang='javascript'>getListBlockData(&#39;qualifiedSupplierList&#39;);
+</code></pre>
+<h5>2.<code>renderListByData(listId, data, formId)</code></h5>
+<p>使用传入的数据渲染列表，其他同getListBlockData</p>
+<pre><code class='language-javascript' lang='javascript'>//列表新增一条数据示例
+var dataList = getJsonFromListForm(&#39;dataAttachmentId&#39;, &#39;contentForm&#39;);
+dataList.push({
+    title: title,
+    id: uuid(),
+    publicTime: getNowFormatDate(),
+    fileId: fileId
+})
+renderListByData(&#39;dataAttachmentId&#39;, &#39;contentForm&#39;, dataList)
+</code></pre>
+<h5>3.<code>getJsonFromListForm(tableListId, formId)</code></h5>
+<p>获取listForm数据，返回对象数组【{}，{}】</p>
+<h5>4.<code>checkListFormMustInput(tableListId, formId)</code></h5>
+<p>检查必填项，根据mustInput配置</p>
+<h5>5.<code>returnListTempByData(listId, listInfos)</code></h5>
+<p>结合数据和配置模板，返回列表dom。注意，如果没有配置模板，该方法不会从页面上获取模板</p>
+<p>&nbsp;</p>
+<h4>form方法：</h4>
+<h5>1.<code>serializeForm(formId)</code></h5>
+<p>获取表单数据</p>
+<ul>
+<li>如果formId存在，会把数据缓存在 <code>dataCenter[&#39;form&#39;][formId][&#39;down&#39;][&#39;formInfo&#39;]</code></li>
+<li>对与id字段，如果配置<code>dataCenter[&#39;form&#39;][formId].infoId</code>存在，会使用infoId，而不会使用页面上的</li>
+
+</ul>
+<h5>2.<code>getAllFormBlockData(formId)</code></h5>
+<p>根据配置，从后台获取数据，渲染表单</p>
+<h5>3.<code>renderFormByData(formId,data)</code></h5>
+<p>根据传入数据渲染页面</p>
+<h5>4.<code>renderForm（formId）</code></h5>
+<p>根据配置渲染页面,一般是先赋值<code>dataCenter[&#39;form&#39;][formId][&#39;down&#39;][&#39;formInfo&#39;]</code>之后调用该方法。</p>
+<h5>5.<code>submit(formId, errfun)</code></h5>
+<p>提交form,调用前后后调用beforSubmit，afterSubmit生命周期方法</p>
+<h5>6.<code>submitListForm(listId,formId,failCallback,err)</code></h5>
+<p>整体提交列表中的所有form</p>
+<h5>8.<code>checkMustInput(formId)</code></h5>
+<p>提交时检验必填项,将所有的没有填写的必填项返回</p>
+<h5>9.<code>checkMaybeInput(formId)</code> </h5>
+<p>提交时检验可填项项,将所有的没有填写的可填项返回</p>
+<p>&nbsp;</p>
+<h3>接口方法：</h3>
+<h5>1.<code>saveOrUpdate(classId, data, callback)</code></h5>
+<p>保存或者更新，data.id存在时是更新</p>
+<pre><code class='language-javascript' lang='javascript'>// 更新表单的示例
+var data = serializeForm(&quot;WXJTransportationInformationForm&quot;);
+data.id = dataCenter.form.mainForm.infoId
+saveOrUpdate(sysJson.classid.component, data, function () {
+
+});
+</code></pre>
+<h5>2.<code>getInfoListByClassId(status, classid, callback)</code></h5>
+<p>查询列表信息</p>
+<pre><code class='language-javascript' lang='javascript'>//根据条件查询
+var supplyArea = $(&quot;select[name=supplyArea]&quot;).val();
+getInfoListByClassId({
+	&quot;searchField&quot;: &quot;supplyArea,supplierStatus&quot;,
+	&quot;searchValue&quot;: supplyArea+&quot;,合格供应商&quot;,
+	&quot;searchCondition&quot;:&quot;and$$$=,and$$$=&quot;,
+},sysJson.classid.supplier,function(result){
+    
+})
+</code></pre>
+<h5>3.<code>updateInfoByClassId(classid, InfoJson, callback)</code></h5>
+<p>根据classid更新表单信息</p>
+<pre><code class='language-javascript' lang='javascript'>//更新数据
+var id = dataCenter.other.id;
+updateInfoByClassId(sysJson.classid.fixedPoint, JSON.stringify({
+    id: id,
+    status: &quot;已关闭&quot;
+}), function () {
+    toUrl(&quot;./designatedListOfYCLList.html&quot;, true);
+})
+</code></pre>
+<h5>4.<code>updateListInfoByClassId(classid, InfoJsonList, callback)</code></h5>
+<p>根据classid更新数组信息,不依赖页面，可以修改数据</p>
+<pre><code class='language-javascript' lang='javascript'>//更新列表
+var dataJson = getJsonFromListForm(&#39;dataList&#39;, &#39;contentForm&#39;);
+for (var i = 0; i &lt; dataJson.length; i++) {
+    dataJson[i].id = dataJson[i].id;
+    dataJson[i].companyName = dataJson[i].fixedPointSupplier;
+    dataJson[i].fixedPointTime = getNowFormatDate();
+    dataJson[i].area = dataCenter.form[&#39;mainForm&#39;].down.formInfo.area;
+    var array = [{
+        year: new Date().getFullYear(),
+        YPrice: dataJson[i].finalFixedPrice,
+    }]
+    dataJson[i].historyPriceJson = html2Escape(JSON.stringify(array));
+}
+updateListInfoByClassId(sysJson.classid.WXJPriceInventory, JSON.stringify(dataJson), 	function (result) {
+	typeof callback != &#39;undefined&#39; &amp;&amp; callback();
+})
+</code></pre>
+<p>&nbsp;</p>
+<h5>5.<code>loopListGetData(dataA, callback, saveToField)</code></h5>
+<p>根据条件同时获取多表的数据</p>
+<pre><code class='language-javascript' lang='javascript'>//配置获取数据的列表
+    var tableDatas = [
+        {
+            classId: sysJson.classid.MJInventory,
+            search: { searchValue: projectId, searchField: &#39;projectId&#39;, searchCondition: &#39;and$$$=&#39;, num: 1000 }
+        },// 项目模具清单表20190329
+        {
+            classId: sysJson.classid.JJInventory,
+            search: { searchValue: projectId, searchField: &#39;projectId&#39;, searchCondition: &#39;and$$$=&#39;, num: 1000 }
+        },// 项目检具清单表20190329
+        .......
+    ];
+
+    loopListGetData(tableDatas, function (data, result, count) {
+        if (count === tableDatas.length) {//此时所有数据已经获取完毕，获取到的信息在infos字段上
+            //数据特殊处理
+            tableDatas.forEach(function (dt) {
+                dt.infos ......
+            })
+
+        }
+    })
+</code></pre>
+<p>&nbsp;</p>
+<h5>6.<code>loopListInterface(dataA, callback)</code></h5>
+<p>循环调接口更新数据列表(并发执行，多张表)</p>
+<pre><code class='language-javascript' lang='javascript'>    var objArr = [{// 合同
+        classId: sysJson.classid.contract,
+        infos: contracts
+    }, {// 模具清单
+        classId: sysJson.classid.designatedListOfKHZD,
+        infos: InventorList_Project
+    }];
+    loopListInterface(objArr, function (dataA, result, count) {
+        if (count === 2) {
+            
+        }
+    });
+</code></pre>
+<p>&nbsp;</p>
+<h5>7.<code>loopListInterfaceOfDelete(dataA, callback)</code></h5>
+<p>循环调接口删除数据列表(并发执行，多张表)</p>
+<pre><code class='language-javascript' lang='javascript'>//多表批量删除的示例
+
+// 根据条件批量获取多张表数据
+    loopListGetData(tableDatas, function (data, result, count) {
+        if (count === tableDatas.length) {//此时所有数据已经获取完毕，获取到的信息在infos字段上
+            // 要删除的数据
+            var daleteData = tableDatas.filter(function (data) {
+                return data.delInfos.length &gt; 0;
+            }).map(function (project) {
+                var deleteIds = project.delInfos.map(function (info) {
+                    var deleteIdsExcapt = project.deleteIdsExcapt;
+                    if (deleteIdsExcapt &amp;&amp; deleteIdsExcapt.length &gt; 0) {
+                        if (deleteIdsExcapt.indexOf(info.id) === -1) {
+                            return info.id;
+                        }
+                    } else {
+                        return info.id;
+                    }
+                }).filter(function (data) {
+                    return data;
+                })
+
+                return {
+                    classId: project.classId,
+                    deleteIds: deleteIds
+                }
+            });
+            // 删除数据
+            loopListInterfaceOfDelete(daleteData, callback)
+        }
+    }, &#39;delInfos&#39;)
+</code></pre>
+<h5>8.<code>saveList(listId, callback)</code></h5>
+<p>保存数据列表数据，如果dataCenter.list[listId].deleteIds有数据，会自动删除</p>
+<pre><code class='language-javascript' lang='javascript'>saveList(nowTabListId, function () {
+    dataCenter.fromNode = dataCenter.fromNode.split(&#39;$$$&#39;)[0] + &quot;$$$saved&quot;;
+    reloadPage();
+});
+</code></pre>
+<p>&nbsp;</p>
+<h5>9.<code>delAllTableByCondition(tableDatas, callback)</code></h5>
+<p>批量删除(多表同时)&lt;先根据条件获取数据，然后再根据ID删除&gt;</p>
+<pre><code class='language-javascript' lang='javascript'>// 数据
+var tableConfig = [{ infos: MJs, classId: sysJson.classid.MJInventory, search: search 
+      },{//项目模具清单表
+        infos: JJs, classId: sysJson.classid.JJInventory, search: search 
+      },{ // 项目检具清单表
+          infos: WXJs, classId: sysJson.classid.WXJInventory, search: search 					},{ // 项目外协件清单表
+             infos: BZJs, classId: sysJson.classid.BZJInventory, search: search 
+         },
+                   .......
+	];
+// 删除配置
+var tableDatasOfDelParma = tableConfig.map(function (dt) {
+    //设置删除排除项
+    dt.deleteIdsExcapt = dt.infos.map(function (info) {
+        return info.id;
+    })
+    return dt;
+})
+delAllTableByCondition(tableDatasOfDelParma, function callback() {
+    
+})
+
+</code></pre>
+<h5>10.<code>deleteInfoByIds(classid, infoids, success, err)</code></h5>
+<p>根据classid和infoids批量删除信息</p>
+<h3>公共方法（常用的）:</h3>
+<h4>字符串方法：</h4>
+<h5>1.<code>trim(str, type)</code></h5>
+<p>去除空格 type 1-所有空格 2-前后空格 3-前空格 4-后空格</p>
+<pre><code class='language-javascript' lang='javascript'>trim(&#39;  12  23456 34 &#39;, 1)
+=&gt; &quot;122345634&quot;
+trim(&#39;  12  23456 34 &#39;, 2)
+=&gt;&quot;12  23456 34&quot;
+trim(&#39;  12  23456 34 &#39;, 3)
+=&gt;&quot;12  23456 34 &quot;
+trim(&#39;  12  23456 34 &#39;, 4)
+=&gt;&quot;  12  23456 34&quot;
+trim(&#39;  12  23456 34 &#39;, 5)
+=&gt;&quot;  12  23456 34 &quot;
+</code></pre>
+<h5>2.<code>upDigit(n)</code></h5>
+<p>现金额大写转换函数 </p>
+<pre><code class='language-javascript' lang='javascript'>upDigit(168752632) =&gt; &quot;人民币壹亿陆仟捌佰柒拾伍万贰仟陆佰叁拾贰元整&quot;
+</code></pre>
+<h5>3.<code>formatText(str, size=3, delimiter=&#39;-&#39;)</code></h5>
+<p>格式化处理字符串 </p>
+<pre><code class='language-javascript' lang='javascript'>formatText(&#39;1234asda567asd890&#39;) ==&gt;&quot;12,34a,sda,567,asd,890&quot;
+</code></pre>
+<h5>4.<code>html2Escape(html)</code></h5>
+<p>html字符串转码,对  <code>&lt; &gt; &amp; &quot; &#39; \ \\ !</code>  转码</p>
+<h5>5.<code>escape2Html(str)</code></h5>
+<p>字符串解码,对  <code>&lt; &gt; &amp; &quot; &#39; \ \\ !</code>  解码</p>
+<h5>6.<code>escapeObjToHtmlObj(obj)</code></h5>
+<p>转码对象转成正常对象，即根据<code>sysJson[&#39;decode&#39;]</code>，对obj中各属性界面</p>
+<h5>7.<code>htmlObjToEscapeObj(htmlobj)</code></h5>
+<p>正常对象转成转码对象，escapeObjToHtmlObj的反操作</p>
+<h5>8.<code>isNotEmpty(obj)</code></h5>
+<p>字符串不为空判断。undefined，null，“ “，0，false都被认为是空的</p>
+<pre><code class='language-javascript' lang='javascript'>isNotEmpty()
+=&gt; false
+isNotEmpty(&#39;&#39;)
+=&gt; false
+isNotEmpty(0)
+=&gt; false
+isNotEmpty(false)
+=&gt; false
+isNotEmpty(undefined)
+=&gt; false
+</code></pre>
+<h5>9.<code>isEmpty(obj)</code></h5>
+<p>字符串为空判断，isNotEmpty的取反</p>
+<h5>10.<code>firstCase(str)</code></h5>
+<p>字符串首字符大写</p>
+<pre><code class='language-javascript' lang='javascript'>firstCase(&#39;key&#39;)
+=&gt; &quot;Key&quot;
+</code></pre>
+<h5>11.<code>temEnginLite(listInfos, tem)</code></h5>
+<p>字符模板渲染Lite</p>
+<pre><code class='language-javascript' lang='javascript'>var listInfos = [{title:&#39;首页&#39;,des:&#39;第一页&#39;,color:&#39;#ccc&#39;},{title:&#39;管理&#39;,des:&#39;管理列表&#39;,color:&#39;#fff&#39;}];
+
+var tem = &#39;&lt;div&gt;&lt;p&gt;{{title}}&lt;/p&gt;&lt;span&gt;{{des}}&lt;/span&gt;&lt;/div&gt;&#39;;
+temEnginLite(listInfos, tem)
+=&gt; &quot;&lt;div&gt;&lt;p&gt;首页&lt;/p&gt;&lt;span&gt;第一页&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;p&gt;管理&lt;/p&gt;&lt;span&gt;管理列表&lt;/span&gt;&lt;/div&gt;&quot;
+</code></pre>
+<p>&nbsp;</p>
+<h5>12.<code>temEngin(listInfos, tem)</code></h5>
+<p>字符模板渲染，处理了值为json的情况，同时会自动解压</p>
+<!--示例-->
+<pre><code class='language-javascript' lang='javascript'>var listInfos = [{title:&#39;首页&#39;,des:&#39;第一页&#39;,chi:&#39;{&quot;name&quot;:&quot;json内容1&quot;}&#39;},{title:&#39;管理&#39;,des:&#39;管理列表&#39;,chi:&#39;{&quot;name&quot;:&quot;json内容2&quot;}&#39;}]
+var tem = &#39;&lt;div&gt;&lt;p&gt;{{title}}&lt;/p&gt;&lt;span&gt;{{chi.name}}&lt;/span&gt;&lt;/div&gt;&#39;;
+temEngin(listInfos, tem)
+=&gt; &quot;&lt;div&gt;&lt;p&gt;首页&lt;/p&gt;&lt;span&gt;json内容1&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;p&gt;管理&lt;/p&gt;&lt;span&gt;json内容1&lt;/span&gt;&lt;/div&gt;&quot;
+var listInfos = [{title:&#39;首页&#39;,des:&#39;第一页&#39;,chi:&#39;{&quot;name&quot;:&quot;json内容1&quot;}&#39;},{title:&#39;管理&#39;,des:&#39;管理列表&#39;,chi:&#39;{&quot;name&quot;:&quot;json内容2&quot;}&#39;}]
+</code></pre>
+<p>&nbsp;</p>
+<h4>数字金额</h4>
+<h5>1.<code>checkType(str, type)</code></h5>
+<p>检测字符串类型，email，phone，tel，number，english，text，chinese，lower，upper</p>
+<pre><code class='language-javascript' lang='javascript'>checkType(&#39;12423563@gmail.com&#39;, &#39;email&#39;)
+=&gt; true
+checkType(&#39;18366880000&#39;, &#39;phone&#39;)
+=&gt; true
+checkType(&#39;abcDEF&#39;, &#39;english&#39;)
+=&gt; true
+checkType(&#39;阿西吧&#39;, &#39;chinese&#39;)
+=&gt; true
+checkType(&#39;abcd&#39;, &#39;lower&#39;)
+=&gt; true
+checkType(&#39;GOOD&#39;, &#39;upper&#39;)
+=&gt; true
+checkType(&#39;0564-5391987&#39;, &#39;tel&#39;)
+=&gt; true
+</code></pre>
+<h5>2.<code>$(selector).numeral(b,t)</code></h5>
+<p>限制数字输入。b=true只能输入浮点数，t=true输入自动添加千分位分隔符</p>
+<pre><code class='language-javascript' lang='javascript'>//只能输入数字和小数点
+$(&quot;input[name=liyong]&quot;).numeral(true);
+$(&#39;input[name=danjia],input[name=shuliang],input[name=danjia]&#39;).numeral(true);
+</code></pre>
+<h5>3.<code>numeralBySelector(select, bl, tl, pos)</code></h5>
+<p> 限制金额输入、兼容浏览器、屏蔽粘贴拖拽等</p>
+<p> select页面元素逗号隔开（或者选择器），bl是否可以输入小数，tl是千位符，pos保留几位小数，默认2位</p>
+<pre><code class='language-javascript' lang='javascript'>numeralBySelector($(&#39;input[name=nnnn]&#39;), false, false);
+</code></pre>
+<h5>4.<code>upDigit(n)</code></h5>
+<p>现金额大写转换函数</p>
+<pre><code class='language-javascript' lang='javascript'>upDigit(168752632)
+=&gt; &quot;人民币壹亿陆仟捌佰柒拾伍万贰仟陆佰叁拾贰元整&quot;
+upDigit(-1693)
+=&gt; &quot;欠人民币壹仟陆佰玖拾叁元整&quot;
+</code></pre>
+<h5>5.<code>toNum(str)</code></h5>
+<p>将千位符类型转成普通数字</p>
+<pre><code class='language-javascript' lang='javascript'>toNum(&#39;12432,25345,46&#39;)
+=&gt; 124322534546
+</code></pre>
+<h5>6.<code>numtoth(num)</code></h5>
+<p>千分位分割，有小数位保留两位</p>
+<pre><code class='language-javascript' lang='javascript'>numtoth(124322534546)
+&quot;124,322,534,546&quot;
+</code></pre>
+<h5>7.<code>checkNumber(theObj)</code></h5>
+<p>验证字符串是否是数字</p>
+<pre><code class='language-javascript' lang='javascript'>checkNumber(124322534546)
+=&gt; true
+checkNumber(&#39;12432-25345-46&#39;)
+=&gt; false
+</code></pre>
+<h5>8.<code>isJSON(str)</code></h5>
+<p>判断是否是json字符串</p>
+<pre><code class='language-javascript' lang='javascript'>isJSON(123)
+=&gt; undefined
+isJSON(&quot;123&quot;)
+=&gt; false
+isJSON(JSON.stringify({a:1}))
+=&gt; true
+</code></pre>
+<h5>9.<code>RecursiveEliminationZero(value)</code></h5>
+<p>消除数字前的0---value只能是字符串?</p>
+<pre><code class='language-javascript' lang='javascript'>RecursiveEliminationZero(&#39;001234567&#39;)
+=&gt; &quot;1234567&quot;
+</code></pre>
+<h5>10.<code>toThousands(num)</code></h5>
+<p>将普通数字转成千位符类型的数字</p>
+<pre><code class='language-javascript' lang='javascript'>toThousands(001234567)
+=&gt; &quot;342,391.00&quot;
+toThousands(&#39;001234567&#39;)
+=&gt; &quot;001,234,567.00&quot;
+toThousands(&#39;001abc4567&#39;)
+=&gt; &quot;0,01a,bc4,567.00&quot;
+</code></pre>
+<h5>11.<code>thousands2Num(str)</code></h5>
+<p>将千位符类型转成普通数字</p>
+<pre><code class='language-javascript' lang='javascript'>thousands2Num(001234567)
+=&gt; 342391
+thousands2Num(&#39;001234567&#39;)
+=&gt; 1234567
+thousands2Num(&#39;1234567&#39;)
+=&gt; 1234567
+thousands2Num(&quot;342,391.00&quot;)
+=&gt; 342391
+thousands2Num(&quot;001,234,567.00&quot;)
+=&gt; 1234567
+</code></pre>
+<h5>12.<code>sestrictType(id)</code></h5>
+<p>初始化页面限制输入,系统自动调用,在元素上配置</p>
+<pre><code class='language-javascript' lang='javascript'>&lt;input sestrictType=&#39;integer&#39;&gt;
+等同 numeralBySelector($(item), false, false);
+&lt;input sestrictType=&#39;decimal-1&#39;&gt;
+等同 numeralBySelector($(item), true, true, 1);
+&lt;input sestrictType=&#39;decimal-2&#39;&gt;
+等同 numeralBySelector($(item), true, true, 2);
+</code></pre>
+<p>&nbsp;</p>
+<h4>日期时间</h4>
+<h5>1.<code>stampToDate(newstime, type)</code> </h5>
+<p>时间戳转化</p>
+<pre><code class='language-javascript' lang='javascript'>timeStampNow()
+==&gt; 1594780715
+stampToDate(1594780715, 1)
+==&gt; &quot;2020-07-15 &quot;
+stampToDate(1594780715, 2)
+==&gt; &quot;2020-07-15 10:38:&quot;
+stampToDate(1594780715)
+==&gt; &quot;2020-07-15 10:38:35&quot;
+</code></pre>
+<h5>2.<code>timeStampNow()</code> </h5>
+<p>当前时间戳（10位）</p>
+<pre><code class='language-javascript' lang='javascript'>timeStampNow()
+==&gt; 1594780843
+</code></pre>
+<h5>3.<code>timeStamp(time)</code> </h5>
+<p> 时间转化为时间戳</p>
+<pre><code class='language-javascript' lang='javascript'>timeStamp(&#39;2020-11-11&#39;)
+==&gt; 1605024000
+timeStamp(&#39;2020/11/11&#39;)
+==&gt; 1605024000
+timeStamp(&#39;2020-07-15 10:38:35&#39;)
+==&gt; 1594780715
+</code></pre>
+<h5>4.<code>getEndTime(endTime)</code> </h5>
+<p>到某一个时间的倒计时</p>
+<pre><code class='language-javascript' lang='javascript'>getEndTime(&#39;2027/7/22 16:0:0&#39;)
+==&gt; {d: 2563, h: 5, m: 14, s: 39}
+</code></pre>
+<h5>5.<code>getWeekFromDate(dateString)</code> </h5>
+<p>根据日期获取周数。日期的格式是&quot;2018-12-11&quot;，返回值是数组，数组第一个值是年，第二个值是周</p>
+<pre><code class='language-javascript' lang='javascript'>getWeekFromDate(&quot;2018-12-11&quot;)
+==&gt; [2018, 50]
+getWeekFromDate(&quot;2027/7/22&quot;)
+==&gt;[2027, 26]
+</code></pre>
+<h5>6.<code>addOneWeek(year, weeks)</code> </h5>
+<p>周数加一</p>
+<pre><code class='language-javascript' lang='javascript'>addOneWeek(2020,11)
+=&gt; [2020, 12]
+addOneWeek(2020,53)
+=&gt; [2021, 1]
+</code></pre>
+<h5>7.<code>subOneWeek(year, weeks)</code> </h5>
+<p>周数减一</p>
+<pre><code class='language-javascript' lang='javascript'>subOneWeek(2020,44)
+=&gt; [2020, 43]
+subOneWeek(2020,1)
+=&gt; [2019, 53]
+</code></pre>
+<h5>8.<code>getNowFormatDate()</code> </h5>
+<p>确认日期</p>
+<pre><code class='language-javascript' lang='javascript'>getNowFormatDate()
+=&gt; &quot;2020-07-15&quot;
+</code></pre>
+<h5>9.<code>getNewData(dateTemp, days)</code> </h5>
+<p>计算日期加上指定天数得到新的日期</p>
+<pre><code class='language-javascript' lang='javascript'>getNewData(&quot;2020-07-15&quot;, 10)
+=&gt; &quot;2020-07-25&quot;
+getNewData(&quot;2020-07-15&quot;, 100)
+=&gt; &quot;2020-10-23&quot;
+getNewData(&quot;2020/07/15&quot;, 100)
+=&gt; &quot;2020-10-23&quot;
+getNewData(&quot;2020-07-15&quot;, -100)
+=&gt; &quot;2020-04-06&quot;
+</code></pre>
+<h5>10.<code>dateDifference(sDate1, sDate2)</code> </h5>
+<p>两个时间相差天数 兼容firefox chrome。sDate1和sDate2是2006-12-18格式</p>
+<pre><code class='language-javascript' lang='javascript'>getNewData(&quot;2020/07/15&quot;, 100)
+=&gt; &quot;2020-10-23&quot;
+dateDifference(&quot;2020/07/15&quot;, &quot;2020-10-23&quot;)
+=&gt; 100
+</code></pre>
+<h5>11.<code>dateDiffFromDateString(sDate1, sDate2)</code> </h5>
+<p>计算两个日期之间的天数 。sDate1和sDate2是2017-9-25格式 </p>
+<pre><code class='language-javascript' lang='javascript'>dateDiffFromDateString(&quot;2020/07/15&quot;, &quot;2020-10-23&quot;)
+=&gt; -100
+</code></pre>
+<h5>12.<code>dateDiffFromDate(date1, date2)</code> </h5>
+<p> 计算两个日期之间的天数，sDate1和sDate2是13位时间戳格式 </p>
+<pre><code class='language-javascript' lang='javascript'>var t1 = timeStamp(&#39;2020/11/11&#39;)*1000
+var t2 = timeStamp(&#39;2020-07-15 10:38:35&#39;)*1000
+
+dateDiffFromDate(t1, t2)
+=&gt; 118
+dateDiffFromDate(t2, t1)
+=&gt;118
+</code></pre>
+<h5>13.<code>getDatesFromWeek(year, weeks)</code> </h5>
+<p>根据年和周数获取当周的天数区间</p>
+<pre><code class='language-javascript' lang='javascript'>getDatesFromWeek(2020, 20)
+=&gt; [&quot;2020-05-10&quot;, &quot;2020-05-11&quot;, &quot;2020-05-12&quot;, &quot;2020-05-13&quot;, &quot;2020-05-14&quot;, &quot;2020-05-15&quot;, &quot;2020-05-16&quot;]
+</code></pre>
+<h5>14.<code>getNowDate()</code></h5>
+<p>获取当前时间字符串</p>
+<pre><code class='language-javascript' lang='javascript'>getNowDate()
+&quot;2020-07-15 14:01:28&quot;
+</code></pre>
+<h5>15.<code>addDate(date, days)</code> </h5>
+<p>日期，在原有日期基础上，增加days天数，默认增加1天</p>
+<pre><code class='language-javascript' lang='javascript'>addDate(&#39;2020-11-1&#39;, 22)
+=&gt; &quot;2020-11-23&quot;
+addDate(&#39;2020-11-1&#39;, -2)
+=&gt; &quot;2020-10-30&quot;
+</code></pre>
+<h5>16.<code>GetDateStr = function (date, AddDayCount)</code> </h5>
+<p> 获取AddDayCount天后的日期</p>
+<pre><code class='language-javascript' lang='javascript'>Date()
+=&gt; &quot;Wed Jul 15 2020 11:22:57 GMT+0800 (中国标准时间)&quot;
+GetDateStr(Date(),10)
+=&gt; &quot;2020-07-25&quot;
+GetDateStr(&quot;2020-07-25&quot;,10)
+=&gt; &quot;2020-08-04&quot;
+</code></pre>
+<h5>17.<code>datedifference(sDate1, sDate2)</code> </h5>
+<p>计算两个时间相差天数</p>
+<pre><code class='language-javascript' lang='javascript'>datedifference(&quot;2020-08-04&quot;, &quot;2020-08-06&quot;)
+=&gt; 2
+</code></pre>
+<h5>18.<code>timestampToDate(shijian)</code> </h5>
+<p>时间戳(10位)转时间</p>
+<pre><code class='language-javascript' lang='javascript'>timestampToDate(Date.parse(&quot;2020-08-04&quot;)/1000)
+&quot;2020-08-04 08:00:00&quot;
+</code></pre>
+<h5>19.<code>getNMYear(time, n)</code> </h5>
+<p>获取当月后n个月的年份,time只能是 YYYY-MM-DD</p>
+<pre><code class='language-javascript' lang='javascript'>getNMYear(&quot;2020-08-04&quot;, 2)
+=&gt;2020
+getNMYear(&quot;2020-08-04&quot;, 12)
+=&gt;2021
+getNMYear(&quot;2020-08-04&quot;, 22)
+=&gt;2022
+</code></pre>
+<h5>20.<code>getNMCYear(time, n)</code> </h5>
+<p>获取当月后n个月的完整年月日,time只能是 YYYY-MM-DD</p>
+<pre><code class='language-javascript' lang='javascript'>getNMCYear(&quot;2020-08-04&quot;, 2)
+=&gt;&quot;2020-10-04&quot;
+getNMCYear(&quot;2020-08-04&quot;, 12)
+=&gt;&quot;2021-08-04&quot;
+getNMCYear(&quot;2020-08-04&quot;, -2)
+=&gt;&quot;2020-06-04&quot;
+</code></pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h4>数组方法</h4>
+<p>&nbsp;</p>
+<h5>1.<code>uniqArr(array)</code> </h5>
+<p>数组去重</p>
+<pre><code class='language-javascript' lang='javascript'>uniqArr([1,2,3,&#39;3&#39;,3,4])
+=&gt; [1, 2, 3, &quot;3&quot;, 4]
+</code></pre>
+<h5>2.<code>groupBy(array, f)</code></h5>
+<p>将数组按条件分组,返回数组</p>
+<pre><code class='language-javascript' lang='javascript'>const a = [{class:&#39;1&#39;,name:&#39;zhangsan&#39;,age:8},{class:&#39;1&#39;,name:&#39;lishi&#39;,age:7},{class:&#39;2&#39;,name:&#39;lebulong&#39;,age:7},{class:&#39;2&#39;,name:&#39;mayu&#39;,age:8}]
+//安class分组
+groupBy(a,data=&gt;data.class)
+=&gt; 
+[[{&quot;class&quot;:&quot;1&quot;,&quot;name&quot;:&quot;zhangsan&quot;,&quot;age&quot;:8},{&quot;class&quot;:&quot;1&quot;,&quot;name&quot;:&quot;lishi&quot;,&quot;age&quot;:7}],[{&quot;class&quot;:&quot;2&quot;,&quot;name&quot;:&quot;lebulong&quot;,&quot;age&quot;:7},{&quot;class&quot;:&quot;2&quot;,&quot;name&quot;:&quot;mayu&quot;,&quot;age&quot;:8}]]
+</code></pre>
+<h5>3.groupBy2Arr(array, f)</h5>
+<p>同groupBy,返回数组</p>
+<h5>4.groupByObj(array, f) </h5>
+<p>分组,返回对象</p>
+<pre><code class='language-javascript' lang='javascript'>groupByObj(a,data=&gt;data.class)
+=&gt;
+{&#39;1&#39;:[{&quot;class&quot;:&quot;1&quot;,&quot;name&quot;:&quot;zhangsan&quot;,&quot;age&quot;:8},{&quot;class&quot;:&quot;1&quot;,&quot;name&quot;:&quot;lishi&quot;,&quot;age&quot;:7}],
+&#39;2&#39;:[{&quot;class&quot;:&quot;2&quot;,&quot;name&quot;:&quot;lebulong&quot;,&quot;age&quot;:7},{&quot;class&quot;:&quot;2&quot;,&quot;name&quot;:&quot;mayu&quot;,&quot;age&quot;:8}]}
+</code></pre>
+<h5>5.groupByFiled(array, f) </h5>
+<p>同groupByObj</p>
+<p>removeRepeatArray(arr) </p>
+<pre><code class='language-javascript' lang='javascript'>removeRepeatArray([13,333,33,33])
+=&gt; [13, 333, 33]
+a = {name:&#39;xixi&#39;}
+removeRepeatArray([1,2,3,a,a])
+=&gt; [1, 2, 3, {…}]
+</code></pre>
+<h5>6.getNewArr(dataArr, repeat, minChar) </h5>
+<p>数组根据某个字段或某几个字段去重</p>
+<pre><code class='language-javascript' lang='javascript'>var b = [{class:&#39;1&#39;,name:&#39;zhangsan&#39;,age:8},{class:&#39;1&#39;,name:&#39;lishi&#39;,age:7},{class:&#39;2&#39;,name:&#39;lebulong&#39;,age:8},{class:&#39;2&#39;,name:&#39;mayu&#39;,age:8}]
+
+getNewArr(b,[&#39;class&#39;,&#39;age&#39;])
+=&gt; [ {class: &quot;1&quot;, name: &quot;zhangsan&quot;, age: 8}, {class: &quot;1&quot;, name: &quot;lishi&quot;, age: 7}, {class: &quot;2&quot;, name: &quot;lebulong&quot;, age: 8}]
+</code></pre>
+<h5>7.Array.prototype.uniquelize</h5>
+<p>数组中元素根据某一字段的值排序（根据up升降排序,默认升序）</p>
+<pre><code class='language-javascript' lang='javascript'>[1,2,4,5,6,2,4].uniquelize ()
+=&gt; [1, 2, 4, 5, 6]
+</code></pre>
+<h5>8.Array.complement</h5>
+<p>两个集合的补集</p>
+<pre><code class='language-javascript' lang='javascript'>var a = [1,2,3,4];
+var b = [3,4,5,6];
+Array.complement(a,b)
+</code></pre>
+<h5>9.Array.prototype.contains(obj)</h5>
+<p>判断数组是否包含某一元素</p>
+<pre><code class='language-javascript' lang='javascript'>[3,4,5,6].contains(3) =&gt;true
+</code></pre>
+<h5>10.Array.intersect(a, b) </h5>
+<p>两个集合的交集</p>
+<pre><code class='language-javascript' lang='javascript'>var a = [1,2,3,4];
+var b = [3,4,5,6];
+Array.intersect(a,b)
+</code></pre>
+<h5>11.Array.minus </h5>
+<p>两个集合的差集</p>
+<pre><code class='language-javascript' lang='javascript'>var a = [1,2,3,4];
+var b = [3,4,5,6];
+alert(Array.minus(a,b));
+</code></pre>
+<h5>12.Array.union = function (a, b) </h5>
+<p>求两个集合的并集</p>
+<pre><code class='language-javascript' lang='javascript'>var a = [1,2,3,4]
+var b = [3,4,5,6];
+Array.union(a,b);
+</code></pre>
+<h5>13.isArray(obj) </h5>
+<p>是否是数组</p>
+<h5>14.isInArray(arr, value)   ??</h5>
+<p>判断一个元素是否存在于一个数组中</p>
+<h5>15.posInArray(arr, value) {</h5>
+<p>判断一个元素是否存在于一个数组中</p>
+<h5>16.isInArray3(arr, value)</h5>
+<p>判断元素是否存在于数组中</p>
+<h5>17 removeArray(val) </h5>
+<p>删除数组指定的某个元素</p>
+<h5>18.pushArrayBypos(dataArray, obj, pos)</h5>
+<p>在数组指定的位置添加一条数据,pos为位置</p>
+<h5>19.updateJsonArrayByPos(dataArray, obj, pos)</h5>
+<p>替换数组指定位置的元素</p>
+<h5>20.function objsum(array, key)</h5>
+<p> 对数组对象的某一字段求和</p>
+<pre><code class='language-javascript' lang='javascript'>a = [ {class: &quot;1&quot;, name: &quot;zhangsan&quot;, age: 8}, {class: &quot;1&quot;, name: &quot;lishi&quot;, age: 7}, {class: &quot;2&quot;, name: &quot;lebulong&quot;, age: 8}];
+objsum(a,&#39;age&#39;)
+=&gt; 23
+</code></pre>
+<p>&nbsp;</p>
+<h5>21.sortObjectArray(objArr, keyArr, type) </h5>
+<p> 对JSON对象字符串数组进行多字段（多列）排序</p>
+<ul>
+<li>objArr: 目标数组</li>
+<li>keyArr: 排序字段，以数组形式传递</li>
+<li>type：排序方式，undefined以及asc都是按照升序排序，desc按照降序排序</li>
+
+</ul>
+<h5>22.updateJsonArrayById(dataArray, obj)</h5>
+<p>根据位id添修改JSON数据(其实是替换)</p>
+<pre><code class='language-javascript' lang='javascript'>updateJsonArrayById([{id:1,title:&#39;name&#39;},{id:2,title:&#39;hh&#39;}], {id:1,title:&#39;age&#39;})
+=&gt; [{id:1,title:&#39;age&#39;},{id:2,title:&#39;hh&#39;}]
+</code></pre>
+<h5>23.updateJsonArrayByField(dataArray, obj, field)</h5>
+<p>根据字段添修改JSON数据 ,如果没有匹配的,就添加在末尾</p>
+<pre><code class='language-javascript' lang='javascript'>updateJsonArrayByField([{id:1,title:&#39;name&#39;},{id:2,title:&#39;hh&#39;}], {id:1,title:&#39;age&#39;},&#39;title&#39;)
+=&gt; [{id:1,title:&#39;age&#39;},{id:2,title:&#39;hh&#39;}]
+</code></pre>
+<h5>24.mergeTwoArray(dataArray, dataArray2, field) </h5>
+<p>两个数组合并,此方法会修改第一个参数,并已经 field 字段去重</p>
+<h5>25.mergeTwoNewArray(dataArray, dataArray2, field, deleteIds)</h5>
+<p> 同上,删除id值在deleteIds的元素</p>
+<h5>26.removeJsonArrayByPos(dataArray, pos) </h5>
+<p>根据位置删除JSON数据,此方法会修改原数组,返回修改后的数组</p>
+<h5>27.removeJsonArrayByPosArr(dataArray, posArr) </h5>
+<p>根据传入的posArr,返回新的数组</p>
+<h5>28.getPosArrayById(dataArray, id) </h5>
+<p>根据id得到对象在数组中的位置,找不到返回-1</p>
+<h5>29.getLastPosByField(dataArray, field, value) </h5>
+<p>根据field的值给出最后一个符合条件的对象的位置,找不到返回-1</p>
+<h5>30.getLastSonPosArrayById(dataArray, id) </h5>
+<p> 根据id得到对象的最后一个儿子在数组中的位置</p>
+<h5>31.getJsonArrayById(dataArray, id) </h5>
+<p> 根据id获取数据</p>
+<h5>32.getObjFromArrayById(dataArray, id) {</h5>
+<p>  根据id获取数据</p>
+<h5>33.getObjFromArrayByField(dataArray, field, value) {</h5>
+<p>  根据field获取数据,取不到返回空对象{}</p>
+<h5>34.getOneObjFromArrayByCondition(dataArray, conditions) </h5>
+<p>根据多个字段获取一个数据,取不到返回false</p>
+<pre><code class='language-javascript' lang='javascript'>a = [ {class: &quot;1&quot;, name: &quot;zhangsan&quot;, age: 8}, {class: &quot;1&quot;, name: &quot;lishi&quot;, age: 7}, {class: &quot;2&quot;, name: &quot;lebulong&quot;, age: 8}];
+objsum(a,{class: &quot;1&quot;, name: &quot;zhangsan&quot;})
+=&gt; {class: &quot;1&quot;, name: &quot;zhangsan&quot;, age: 8}
+</code></pre>
+<h5>35.deleteJsonArrayById(dataArray, id) </h5>
+<p>根据id属性删除数据,返回删除后的数组,同时会修改原数组</p>
+<h5>36.deleteArrayByFiled(dataArray, value, filed) </h5>
+<p>根据filed的值来删除数据,返回删除后的数组,同时会修改原数组</p>
+<h5>37.deleteArrayByValue(dataArray, value) {</h5>
+<p>根据value的值来删除数据,返回删除后的数组,同时会修改原数组</p>
+<h5>38.getDeleteArrayIdsByFiled(dataArray, value, filed) {</h5>
+<p>根据filed的值获取删除数据的id</p>
+<pre><code class='language-javascript' lang='javascript'>//获取一年级学生的id
+a = [ {class: &quot;1&quot;, name: &quot;zhangsan&quot;, age: 8,id:1}, {class: &quot;1&quot;, name: &quot;lishi&quot;, age: 7,id:2}, {class: &quot;2&quot;, name: &quot;lebulong&quot;, age: 8,id:4}];
+getDeleteArrayIdsByFiled(a,{class: &quot;1&quot;, name: &quot;zhangsan&quot;})
+=&gt; [1,2]
+</code></pre>
+<h5>39.isEqualOfTwoObject(obj1, obj2, fieldArray) </h5>
+<p>比较两个对象的多个字段是否相等</p>
+<h5>40.isIncludeOfArray(array, obj, fieldArray) {</h5>
+<p>判断数组对象中是否有对应项</p>
+<pre><code class='language-javascript' lang='javascript'>//获取一年级学生的id
+a = [ {class: &quot;1&quot;, name: &quot;zhangsan&quot;, age: 8,id:1}, {class: &quot;1&quot;, name: &quot;lishi&quot;, age: 7,id:2}, {class: &quot;2&quot;, name: &quot;lebulong&quot;, age: 8,id:4}];
+isIncludeOfArray(a,{class: &quot;1&quot;, name: &quot;zhangsan&quot;,age:&#39;9&#39;},[&#39;class&#39;,&#39;name&#39;])
+=&gt; {class: &quot;1&quot;, name: &quot;zhangsan&quot;, age: 8,id:1} 
+</code></pre>
+<h5>41.deleteObjectById(dataArray, id) </h5>
+<p>删除自己后自己的后代元素(通过pid关联后代)</p>
+<h5>42.getSonArray(dataArray, id) {</h5>
+<p>  根据id获取所有的子对象数组，这里只是儿子，不是子孙</p>
+<h5>43.isFromJsonByField(dataArray, field, value) </h5>
+<p>判断dataArray中是否存在 指定字段filed和字段对应的值 的对象</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h4>其他方法</h4>
+<p>&nbsp;</p>
+<h5>1.randomRange(start, end) </h5>
+<p>范围随机数</p>
+<h5>2.browserInfo() {</h5>
+<p>浏览器信息</p>
+<pre><code class='language-javascript' lang='javascript'>browserInfo() =&gt; 
+{
+	isMobi,// 是否是手机浏览器
+	isWeiXin,//是否为微信浏览器
+	isAppleMobileDevice,//判断是否苹果移动设备访问
+	isAndroidMobileDevice,//判断是否安卓移动设备访问
+	isMobileUserAgent,//判断是否移动设备访问
+	type//浏览器类型. &quot;IE&quot;|&quot;Firefox&quot;|&quot;Chrome&quot;|&quot;Safari&quot;
+}
+</code></pre>
+<h5>3.getweb() </h5>
+<p>浏览器信息,返回&quot;IE&quot;|&quot;Firefox&quot;|&quot;Chrome&quot;|&quot;Safari&quot;</p>
+<h5>4.toUrl(url, self, clearRole=true, obj) {</h5>
+<p> 跳转链接,url:下一个页面的url,self:是否是在本页面跳转,clearRole:清除角色信息,obj:url参数</p>
+<h5>5.uuid()</h5>
+<p>随机码,可以用做id</p>
+<pre><code class='language-javascript' lang='javascript'>uuid()
+&quot;f38dd965-0b6c-4242-abe4-c085bac42581&quot;
+</code></pre>
+<h5>6.isIEBroswer()</h5>
+<p>判断是否是IE</p>
+<h5>7..$(&quot;textarea&quot;).autoHeight()</h5>
+<p>textarea高度自适应</p>
+<h5>8.String.prototype.colorHex = function () {</h5>
+<p>RGB颜色转换为16进制</p>
+<h5>9.String.prototype.colorRgb = function () {</h5>
+<p>16进制颜色转为RGB格式</p>
+<h5>10.GetUrlRelativePath() </h5>
+<p> 获取当前相对路径的方法</p>
+</body>
+</html>
