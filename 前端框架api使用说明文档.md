@@ -1,12 +1,4 @@
-## 前端框架api使用说明文档 （修改中）
-
-## 
-
-- [x] 添加列表
-
-- [x] 添加简单说明
-
-- [ ] 添加简单示例
+## 前端框架api使用说明文档
 
 [TOC]
 
@@ -22,10 +14,28 @@
 - 表格可配置分页，系统会自动渲染分页，添加分页事件
 - 可配置基础数据，系统自动渲染（下拉框）
 - 可配置接口筛选，排序
+- 渲染页面前后会调用berfor、after生命周期方法
+- 如果没有配置列表模板，第一次运行会从页面获取模板并保存到配置
+
+```javascript
+getListBlockData('qualifiedSupplierList');
+```
 
 ##### 2.`renderListByData(listId, data, formId)`
 
 使用传入的数据渲染列表，其他同getListBlockData
+
+```javascript
+//列表新增一条数据示例
+var dataList = getJsonFromListForm('dataAttachmentId', 'contentForm');
+dataList.push({
+    title: title,
+    id: uuid(),
+    publicTime: getNowFormatDate(),
+    fileId: fileId
+})
+renderListByData('dataAttachmentId', 'contentForm', dataList)
+```
 
 ##### 3.`getJsonFromListForm(tableListId, formId)`
 
@@ -33,11 +43,11 @@
 
 ##### 4.`checkListFormMustInput(tableListId, formId)`
 
-检查必填项，需要配置mustInput
+检查必填项，根据mustInput配置
 
 ##### 5.`returnListTempByData(listId, listInfos)`
 
-结合数据和模板，返回列表dom
+结合数据和配置模板，返回列表dom。注意，如果没有配置模板，该方法不会从页面上获取模板
 
 
 
@@ -60,21 +70,15 @@
 
 ##### 4.`renderForm（formId）`
 
-根据配置渲染页面,一般是先赋值`dataCenter['form'][formId]['down']['formInfo']`之后掉用该方法。
+根据配置渲染页面,一般是先赋值`dataCenter['form'][formId]['down']['formInfo']`之后调用该方法。
 
-会渲染
+##### 5.`submit(formId, errfun)`
 
-##### 5.`submit(formId, err)`
-
-提交form
+提交form,调用前后后调用beforSubmit，afterSubmit生命周期方法
 
 ##### 6.`submitListForm(listId,formId,failCallback,err)`
 
 整体提交列表中的所有form
-
-##### 7.`deleteInfoByIds(classid, infoids, success, err)`
-
-根据classid和infoids批量删除信息
 
 ##### 8.`checkMustInput(formId)`
 
@@ -92,41 +96,206 @@
 
 保存或者更新，data.id存在时是更新
 
+```javascript
+// 更新表单的示例
+var data = serializeForm("WXJTransportationInformationForm");
+data.id = dataCenter.form.mainForm.infoId
+saveOrUpdate(sysJson.classid.component, data, function () {
+
+});
+```
+
 ##### 2.`getInfoListByClassId(status, classid, callback)`
 
 查询列表信息
+
+```javascript
+//根据条件查询
+var supplyArea = $("select[name=supplyArea]").val();
+getInfoListByClassId({
+	"searchField": "supplyArea,supplierStatus",
+	"searchValue": supplyArea+",合格供应商",
+	"searchCondition":"and$$$=,and$$$=",
+},sysJson.classid.supplier,function(result){
+    
+})
+```
 
 ##### 3.`updateInfoByClassId(classid, InfoJson, callback)`
 
 根据classid更新表单信息
 
+```javascript
+//更新数据
+var id = dataCenter.other.id;
+updateInfoByClassId(sysJson.classid.fixedPoint, JSON.stringify({
+    id: id,
+    status: "已关闭"
+}), function () {
+    toUrl("./designatedListOfYCLList.html", true);
+})
+```
+
 ##### 4.`updateListInfoByClassId(classid, InfoJsonList, callback)`
 
-根据classid更新数组信息
+根据classid更新数组信息,不依赖页面，可以修改数据
+
+```javascript
+//更新列表
+var dataJson = getJsonFromListForm('dataList', 'contentForm');
+for (var i = 0; i < dataJson.length; i++) {
+    dataJson[i].id = dataJson[i].id;
+    dataJson[i].companyName = dataJson[i].fixedPointSupplier;
+    dataJson[i].fixedPointTime = getNowFormatDate();
+    dataJson[i].area = dataCenter.form['mainForm'].down.formInfo.area;
+    var array = [{
+        year: new Date().getFullYear(),
+        YPrice: dataJson[i].finalFixedPrice,
+    }]
+    dataJson[i].historyPriceJson = html2Escape(JSON.stringify(array));
+}
+updateListInfoByClassId(sysJson.classid.WXJPriceInventory, JSON.stringify(dataJson), 	function (result) {
+	typeof callback != 'undefined' && callback();
+})
+```
+
+
 
 ##### 5.`loopListGetData(dataA, callback, saveToField)`
 
 根据条件同时获取多表的数据
 
+```javascript
+//配置获取数据的列表
+    var tableDatas = [
+        {
+            classId: sysJson.classid.MJInventory,
+            search: { searchValue: projectId, searchField: 'projectId', searchCondition: 'and$$$=', num: 1000 }
+        },// 项目模具清单表20190329
+        {
+            classId: sysJson.classid.JJInventory,
+            search: { searchValue: projectId, searchField: 'projectId', searchCondition: 'and$$$=', num: 1000 }
+        },// 项目检具清单表20190329
+        .......
+    ];
+
+    loopListGetData(tableDatas, function (data, result, count) {
+        if (count === tableDatas.length) {//此时所有数据已经获取完毕，获取到的信息在infos字段上
+            //数据特殊处理
+            tableDatas.forEach(function (dt) {
+                dt.infos ......
+            })
+
+        }
+    })
+```
+
+
+
 ##### 6.`loopListInterface(dataA, callback)`
 
 循环调接口更新数据列表(并发执行，多张表)
+
+```javascript
+    var objArr = [{// 合同
+        classId: sysJson.classid.contract,
+        infos: contracts
+    }, {// 模具清单
+        classId: sysJson.classid.designatedListOfKHZD,
+        infos: InventorList_Project
+    }];
+    loopListInterface(objArr, function (dataA, result, count) {
+        if (count === 2) {
+            
+        }
+    });
+```
+
+
 
 ##### 7.`loopListInterfaceOfDelete(dataA, callback)`
 
 循环调接口删除数据列表(并发执行，多张表)
 
-##### 8.`loopInterface(classId, dataA, callback)`
+```javascript
+//多表批量删除的示例
 
-循环调接口更新数据列表(并发执行)
+// 根据条件批量获取多张表数据
+    loopListGetData(tableDatas, function (data, result, count) {
+        if (count === tableDatas.length) {//此时所有数据已经获取完毕，获取到的信息在infos字段上
+            // 要删除的数据
+            var daleteData = tableDatas.filter(function (data) {
+                return data.delInfos.length > 0;
+            }).map(function (project) {
+                var deleteIds = project.delInfos.map(function (info) {
+                    var deleteIdsExcapt = project.deleteIdsExcapt;
+                    if (deleteIdsExcapt && deleteIdsExcapt.length > 0) {
+                        if (deleteIdsExcapt.indexOf(info.id) === -1) {
+                            return info.id;
+                        }
+                    } else {
+                        return info.id;
+                    }
+                }).filter(function (data) {
+                    return data;
+                })
 
-##### 9.`saveList(listId, callback)`
+                return {
+                    classId: project.classId,
+                    deleteIds: deleteIds
+                }
+            });
+            // 删除数据
+            loopListInterfaceOfDelete(daleteData, callback)
+        }
+    }, 'delInfos')
+```
+
+##### 8.`saveList(listId, callback)`
 
 保存数据列表数据，如果dataCenter.list[listId].deleteIds有数据，会自动删除
 
-##### 10.`delAllTableByCondition(tableDatas, callback)`
+```javascript
+saveList(nowTabListId, function () {
+    dataCenter.fromNode = dataCenter.fromNode.split('$$$')[0] + "$$$saved";
+    reloadPage();
+});
+```
+
+
+
+##### 9.`delAllTableByCondition(tableDatas, callback)`
 
 批量删除(多表同时)<先根据条件获取数据，然后再根据ID删除>
+
+```javascript
+// 数据
+var tableConfig = [{ infos: MJs, classId: sysJson.classid.MJInventory, search: search 
+      },{//项目模具清单表
+        infos: JJs, classId: sysJson.classid.JJInventory, search: search 
+      },{ // 项目检具清单表
+          infos: WXJs, classId: sysJson.classid.WXJInventory, search: search 					},{ // 项目外协件清单表
+             infos: BZJs, classId: sysJson.classid.BZJInventory, search: search 
+         },
+                   .......
+	];
+// 删除配置
+var tableDatasOfDelParma = tableConfig.map(function (dt) {
+    //设置删除排除项
+    dt.deleteIdsExcapt = dt.infos.map(function (info) {
+        return info.id;
+    })
+    return dt;
+})
+delAllTableByCondition(tableDatasOfDelParma, function callback() {
+    
+})
+
+```
+
+##### 10.`deleteInfoByIds(classid, infoids, success, err)`
+
+根据classid和infoids批量删除信息
 
 ### 公共方法（常用的）:
 
@@ -135,6 +304,19 @@
 ##### 1.`trim(str, type)`
 
 去除空格 type 1-所有空格 2-前后空格 3-前空格 4-后空格
+
+```javascript
+trim('  12  23456 34 ', 1)
+=> "122345634"
+trim('  12  23456 34 ', 2)
+=>"12  23456 34"
+trim('  12  23456 34 ', 3)
+=>"12  23456 34 "
+trim('  12  23456 34 ', 4)
+=>"  12  23456 34"
+trim('  12  23456 34 ', 5)
+=>"  12  23456 34 "
+```
 
 ##### 2.`upDigit(n)`
 
@@ -154,35 +336,62 @@ formatText('1234asda567asd890') ==>"12,34a,sda,567,asd,890"
 
 ##### 4.`html2Escape(html)`
 
-html字符串转码
-
+html字符串转码,对  `< > & " ' \ \\ ! `  转码
 ##### 5.`escape2Html(str)`
 
-字符串解码
+字符串解码,对  `< > & " ' \ \\ ! `  解码
 
 ##### 6.`escapeObjToHtmlObj(obj)`
 
-转码对象转成正常对象，根据`sysJson['decode']`
+转码对象转成正常对象，即根据`sysJson['decode']`，对obj中各属性界面
 
 ##### 7.`htmlObjToEscapeObj(htmlobj)`
 
-正常对象转成转码对象
+正常对象转成转码对象，escapeObjToHtmlObj的反操作
 
-##### 8.`sNotEmpty(obj)`
+##### 8.`isNotEmpty(obj)`
 
-字符串不为空判断
+字符串不为空判断。undefined，null，“ “，0，false都被认为是空的
+
+```javascript
+isNotEmpty()
+=> false
+isNotEmpty('')
+=> false
+isNotEmpty(0)
+=> false
+isNotEmpty(false)
+=> false
+isNotEmpty(undefined)
+=> false
+```
 
 ##### 9.`isEmpty(obj)`
 
-字符串为空判断
+字符串为空判断，isNotEmpty的取反
 
 ##### 10.`firstCase(str)`
 
 字符串首字符大写
 
+```javascript
+firstCase('key')
+=> "Key"
+```
+
 ##### 11.`temEnginLite(listInfos, tem)`
 
 字符模板渲染Lite
+
+```javascript
+var listInfos = [{title:'首页',des:'第一页',color:'#ccc'},{title:'管理',des:'管理列表',color:'#fff'}];
+
+var tem = '<div><p>{{title}}</p><span>{{des}}</span></div>';
+temEnginLite(listInfos, tem)
+=> "<div><p>首页</p><span>第一页</span></div><div><p>管理</p><span>管理列表</span></div>"
+```
+
+
 
 ##### 12.`temEngin(listInfos, tem)`
 
@@ -191,7 +400,11 @@ html字符串转码
 <!--示例-->
 
 ```javascript
-temEngin(sections, "<th>{{title}}</th>")
+var listInfos = [{title:'首页',des:'第一页',chi:'{"name":"json内容1"}'},{title:'管理',des:'管理列表',chi:'{"name":"json内容2"}'}]
+var tem = '<div><p>{{title}}</p><span>{{chi.name}}</span></div>';
+temEngin(listInfos, tem)
+=> "<div><p>首页</p><span>json内容1</span></div><div><p>管理</p><span>json内容1</span></div>"
+var listInfos = [{title:'首页',des:'第一页',chi:'{"name":"json内容1"}'},{title:'管理',des:'管理列表',chi:'{"name":"json内容2"}'}]
 ```
 
 
