@@ -5,9 +5,242 @@
 <title>前端框架api使用说明文档</title></head>
 <body><h2>前端框架api使用说明文档</h2>
 <div>[TOC]</div>
+<h3>一、配置dataCenter.js说明:</h3>
+<pre><code class='language-javascript' lang='javascript'>var dataCenter = {
+    //默认数据
+    pageUrl : &#39;&#39;,//页面完整url
+    pageName: &#39;&#39;,//页面名称
+    pageNode: &#39;1&#39;,//节点名称，0、1、2、3等
+    fromNode: &#39;normal&#39;,//当前页面状态
+    queue:[],
+    workflow:{//工作流相关
+        deployment:{},
+        template:{},
+    },
+    other:{},
+    to:{},//需传到下一个页面值
+    list: { // 列表配置
+        mainList: { // 列表id
+            classId :&#39;&#39;, //栏目id &lt;配置&gt;
+            pid     :&#39;&#39;,
+            ids     :&#39;&#39;,
+            isRow:false, //table---false  row----true &lt;配置&gt;
+            isPersist:true, //页面json---false  持久化 -----true &lt;配置&gt;
+            deleteIds:[], //待删除项id的集合
+            getParamFun:function (){ //整合搜索条件方法 可重新整合生成list查找参数 &lt;配置&gt;
+                this.pid = &#39;1231241234&#39;;
+                return this.getSearchInfo();
+            },
+           paginationConditions:&#39;item.name==&quot;{{name}} &amp;&amp; item.age&gt;{{age}}&quot;&#39;,//paginationConditions实际上可以不用配置
+           getPaginationConditions:function(){ //用于在客户端对json数据筛选 前端分页要按照这种方式来生成，其中item会被对象替换掉 &lt;配置&gt;
+                var name = $(&quot;input[name=&#39;name&#39;]&quot;);
+                var age= $(&quot;input[name=&#39;age&#39;]&quot;);
+                var state= $(&quot;input[name=&#39;state&#39;]&quot;);
+                return &#39;item.indexof(&quot;&#39;+name+&#39;&quot;) &amp;&amp; item.age&gt;&#39;+age +&quot;&amp;&amp; (state == 1 || state==2)&quot;;
+            },
+            searchInterface:null, //查询接口 &lt;配置&gt;
+            isLoadingLayer:true,
+            paginationType:1,//1:多个页码，2：只有页数 &lt;配置&gt;
+            searchInfo: { //&lt;配置&gt;
+                orderType  : &quot;&quot;,  //排序类型
+                searchAttr : &quot;&quot;,  //搜索方法的属性,如置顶等
+                startTime  : &quot;&quot;,    //按时间段搜索newstime开始时间
+                endTime    : &quot;&quot;,      //按时间段搜索newstime结束时间
+                searchField: [&quot;name&quot;,&quot;title&quot;],  //搜索项的value
+                searchValue: &#39;&#39;,  //搜索项[] searchValue参数的值要从页面上动态获取
+                searchCondition: [&quot;=$$$and$$$or&quot;,&quot;like$$$and&quot;],
+                /*
+                (a=1 or a=2) and (b=1 or b=2)       
+                searchField: &quot;a,b&quot;,  //搜索项的value
+                searchValue: &quot;1$$$2,1$$$2&quot;,  //搜索项
+                searchCondition: &quot;=$$$and$$$or,=$$$and$$$or&quot;,
+
+                (a=1 and b=2) or c=1 or d=2
+                转变：a=1 and b=2 or c=1 or d=2
+                searchField: &quot;a,b,c,d&quot;,  //搜索项的value
+                searchValue: &quot;1,2,1,2&quot;,  //搜索项
+                searchCondition: &quot;=$$$and,=$$$and,=$$$or,=$$$or&quot;,
+                */
+            },
+            staticSearch: {//searchValue参数的值是定值，可以写死 &lt;配置&gt;
+                searchField: [&quot;password&quot;],  //搜索项的value
+                searchValue: &quot;xiaoming$$$xiaoma$$$xiaohu&quot;,  //搜索项
+                searchCondition: [&quot;=$$$and$$$or&quot;],
+            },
+            page: {         //分页 &lt;配置&gt;
+                num: 20,    //每页显示信息数
+                page: 1,    //当前页
+                pages: 10,	//总页数
+                total:100,  //总信息数
+            },
+            searchFields:[],
+            listInfos:[],      //信息列表，被ajax直接赋值，或躲过函数来赋值，与getlistInfosData配合起来使用
+            getlistInfosData:function(){ //&lt;配置&gt;
+                return JSON.parse( $(&quot;.www&quot;).val());
+            },//可以用来对listInfos重新赋值，可主要做前端筛选使用
+            setOutInput:function(){ //&lt;配置&gt;
+                $(&quot;#31231&quot;).val(JSON.stringify(listInfos));
+            }, //这个函数在showFormDialog中被调用    
+            temphead: &#39;&#39;,//存储表头模板 &lt;配置&gt;
+            temprow: &#39;&#39;,//存储表每行模板 &lt;配置&gt;
+            temptfoot: &#39;&#39;,//存储表tfoot模板 &lt;配置&gt;
+            show: {/*控制列表的列显示  &lt;配置&gt; */
+                searchRole: {/*有的就删除*/
+                    allRole: { // 角色
+                        &#39;1&#39;: {
+                            &#39;manager&#39;: [&#39;number&#39;, &#39;name&#39;, &#39;note&#39;, &#39;title&#39;],
+                            &#39;2&#39;: [&#39;caiwuDHmeetingminutesname&#39;, &#39;caiwuDHmeetingminutes&#39;],
+                        },
+                    },
+                },
+                listRole: {
+                    allRole: {
+                        &#39;1&#39;: {
+                            &#39;index&#39;: {
+                                thead: [&#39;name&#39;, &#39;note&#39;],//有的就删掉
+                                row:[0,1,4,6], //有的就删掉
+                            },//有的就删掉,
+                            &#39;2&#39;: {
+                                thead: [&#39;name&#39;, &#39;note&#39;],//有的就删掉
+                                row:[0,1,4,6],
+                            }
+                        },
+                    },
+                },
+            },
+                //showBlock不是控制input，是根据id控制哪些部分需要显示
+            showBlock: {/*控制块的显示 */
+                allRole: {
+                    &#39;1&#39;: {
+                        &#39;manager&#39;: [&#39;caiwuDHreportmaterialname&#39;, &#39;caiwuDHreportmaterial&#39;],
+                        &#39;2&#39;: [&#39;caiwuDHmeetingminutesname&#39;, &#39;caiwuDHmeetingminutes&#39;],
+                    },
+                    &#39;2&#39;: {
+                        &#39;1&#39;: [&#39;caiwuDHmeetingminutesname&#39;, &#39;caiwuDHmeetingminutes&#39;],
+                        &#39;4&#39;: [&#39;caiwuDHmeetingminutesname&#39;, &#39;caiwuDHmeetingminutes&#39;],
+                    },
+                },//哪些块被显示
+            },
+            hiddenBlock: {/*控制块的隐藏 */
+                allRole: {
+                    &#39;1&#39;: {
+                        &#39;manager&#39;: [&#39;caiwuDHreportmaterialname&#39;, &#39;caiwuDHreportmaterial&#39;],
+                        &#39;2&#39;: [&#39;caiwuDHmeetingminutesname&#39;, &#39;caiwuDHmeetingminutes&#39;],
+                    },
+                },//哪些块被显示
+            }
+        },
+    },
+    form: {
+        mainForm: {
+            classId     :&#39;&#39;,//栏目id &lt;配置&gt;
+            infoId      : &#39;&#39;,//信息id
+            draftInfoId :&#39;&#39;,//草稿箱id
+            state:&#39;&#39;,//状态
+            setOutInput:function(data,output){ //&lt;配置&gt;
+                data[&#39;id&#39;]=output;
+                var json=JSON.parse($(&quot;&quot;).val());
+                updateJsonArrayById(json,data);
+                $(&quot;&quot;).val(JSON.stringify());
+            },//与showFormDialog配合使用
+            down: {
+            /*从服务器上下载的数据，有两组数据，一般前端在修改数据时只修改formNewInfo，
+            formInfo可以保留，不修改，用来判断前端页面是否对数据做了修改
+            */
+                formInfo: {
+
+                },
+                formNewInfo: {
+
+                },
+            },
+            //update：控制页面跳转，在submit之后页面会跳转到什么地方
+            update: {
+                style: { update: &#39;manager&#39;, save: &#39;index&#39;, cancel: &#39;manager&#39; },
+            },
+           
+            //压缩项，要对特殊字符进行压缩
+            decode: [&#39;deviceJson&#39;,&#39;chargingPlan&#39;,&#39;costbookJson&#39;,&#39;productJson&#39;], //&lt;配置&gt;
+            resetFields:[],//有哪些字段要重置，由于字段比较多，配置起来比较复杂，可以用notDeleteCache
+            //notDeleteCache一下部分不清除页面缓存，其他的都清除
+            notDeleteCache: [&#39;caiwuDHreportmaterialname&#39;, &#39;caiwuDHreportmaterial&#39;], //&lt;配置&gt;
+            roleShow: { //&lt;配置&gt;
+                allRole: {
+                    view: {//通过input的name控制input
+                        &#39;1&#39;/*pageNode */: {//当前页面号
+                            &#39;index&#39;/*fromNode */:{&#39;caiwuDHreportmaterialname&#39;:&#39;disabled&#39;},
+                            &#39;2&#39;/*fromNode */: {},
+                        },
+                        &#39;2&#39;: {
+                            
+                        }
+                    },//input状态
+                    hidden: {//通过class让元素隐藏
+                        &#39;1&#39;: {
+                            &#39;index&#39;: [&#39;lastName&#39;, &#39;caiwuDHreportmaterialname&#39;],
+                            &#39;2&#39;:[],
+                        },
+                    },
+                    //必填项
+                    mustInput: {
+                        &#39;1&#39;: {
+                            &#39;index&#39;: [&#39;lastName&#39;, &#39;caiwuDHreportmaterialname&#39;],
+                            &#39;2&#39;: [],
+                        },
+                    },//必填项
+                    maybeInput: {
+                        &#39;1&#39;: {
+                            &#39;index&#39;: [&#39;caiwuDHreportmaterialname&#39;],
+                            &#39;2&#39;: [&#39;caiwuDHmeetingminutesname&#39;, &#39;caiwuDHmeetingminutes&#39;],
+                        },
+                    },        
+                    //showBlock不是控制input，是根据id控制哪些部分需要显示
+                    showBlock: {
+                        &#39;1&#39;: {
+                            &#39;index&#39;: [&#39;caiwuDHreportmaterialname&#39;],
+                            &#39;4&#39;: [&#39;caiwuDHreportmaterialname&#39;, &#39;caiwuDHreportmaterial&#39;],
+                        },
+                    },
+                },
+            },
+        },
+    },
+    user: {//用户信息,
+        userId: &#39;99999&#39;,
+        userName: &#39;admin&#39;,
+        lastName:&#39;&#39;,
+        firstName:&#39;&#39;,
+        userType:&#39;&#39;,
+        bumenTitle:&#39;&#39;,
+		keshiTitle:&#39;&#39;,
+        email:&#39;&#39;,
+        rolesBackup:[],
+        roles: [
+            {
+                roleId: &#39;&#39;,
+                roleName: &#39;meetingCreator&#39;,//allRole,
+                orgId: &#39;&#39;,
+                orgName: &#39;&#39;,
+                roleType:&#39;&#39;,
+                //roleType，比如：1岗位角色positionRole，2项目角色projectRole，
+                //进页面分配，出页面删除
+            },
+        ],
+        orgid:&#39;14b8c8f3-7338-4d4c-a924-37c3db7a7fb5&#39;,
+        
+    },
+
+}
+</code></pre>
 <p>&nbsp;</p>
-<h3>核心框架API：</h3>
+<h3>二、核心框架API：</h3>
 <h4>列表方法：</h4>
+<blockquote><p>/**</p>
+<p> * 调用后台方法获取数据,参数为:块listId(与dataCenter.list里的字段对应)</p>
+<p> * @param {*} listId 列表id</p>
+<p> * @param {*} fomId 列表重复单元块id，表格就是tr的id，默认等于contentForm</p>
+<p> */</p>
+</blockquote>
 <h5>1.<code>getListBlockData(listId, fomId)</code></h5>
 <ul>
 <li>根据配置自动从获取数据，渲染列表</li>
@@ -20,6 +253,13 @@
 </ul>
 <pre><code class='language-javascript' lang='javascript'>getListBlockData(&#39;qualifiedSupplierList&#39;);
 </code></pre>
+<blockquote><p>/**</p>
+<p> * 直接传数据</p>
+<p> * @param {*} listId </p>
+<p> * @param {*} formId </p>
+<p> * @param {Array} data </p>
+<p> */</p>
+</blockquote>
 <h5>2.<code>renderListByData(listId, data, formId)</code></h5>
 <p>使用传入的数据渲染列表，其他同getListBlockData</p>
 <pre><code class='language-javascript' lang='javascript'>//列表新增一条数据示例
@@ -32,14 +272,38 @@ dataList.push({
 })
 renderListByData(&#39;dataAttachmentId&#39;, &#39;contentForm&#39;, dataList)
 </code></pre>
+<blockquote><p>/**</p>
+<p> * 获取formList集合json。</p>
+<p> * @param {*} tableListId </p>
+<p> * @param {*} formId </p>
+<p> * 如果是row，formId和class=&quot;row&quot;共用一个标签，如果是table，formId在tr上设置</p>
+<p> */</p>
+</blockquote>
 <h5>3.<code>getJsonFromListForm(tableListId, formId)</code></h5>
 <p>获取listForm数据，返回对象数组【{}，{}】</p>
+<blockquote><p>/**</p>
+<p> * 对外开放</p>
+<p> * @param {*} tableListId </p>
+<p> * @param {*} formId </p>
+<p> */</p>
+</blockquote>
 <h5>4.<code>checkListFormMustInput(tableListId, formId)</code></h5>
 <p>检查必填项，根据mustInput配置</p>
+<blockquote><p>/**</p>
+<p> * 对外开放</p>
+<p> * @param {*} tableListId </p>
+<p> * @param {*} formId </p>
+<p> */</p>
+</blockquote>
 <h5>5.<code>returnListTempByData(listId, listInfos)</code></h5>
 <p>结合数据和配置模板，返回列表dom。注意，如果没有配置模板，该方法不会从页面上获取模板</p>
 <p>&nbsp;</p>
 <h4>form方法：</h4>
+<blockquote><p>/**</p>
+<p> * 调用方法，获取页面上formId表单中所有的input的键值对，主城一个对象返回</p>
+<p> * @param {*} formId</p>
+<p> */</p>
+</blockquote>
 <h5>1.<code>serializeForm(formId)</code></h5>
 <p>获取表单数据</p>
 <ul>
@@ -47,22 +311,56 @@ renderListByData(&#39;dataAttachmentId&#39;, &#39;contentForm&#39;, dataList)
 <li>对与id字段，如果配置<code>dataCenter[&#39;form&#39;][formId].infoId</code>存在，会使用infoId，而不会使用页面上的</li>
 
 </ul>
+<blockquote><p>/**</p>
+<p> * 根据配置，从后台获取数据，渲染表单</p>
+<p> * @param {*} formId</p>
+<p> */</p>
+</blockquote>
 <h5>2.<code>getAllFormBlockData(formId)</code></h5>
 <p>根据配置，从后台获取数据，渲染表单</p>
 <h5>3.<code>renderFormByData(formId,data)</code></h5>
 <p>根据传入数据渲染页面</p>
+<blockquote><p>/**</p>
+<p> * 渲染，通过dom查找input， 根据name属性，分别修改value</p>
+<p> * @param {*} formId</p>
+<p> */</p>
+</blockquote>
 <h5>4.<code>renderForm（formId）</code></h5>
 <p>根据配置渲染页面,一般是先赋值<code>dataCenter[&#39;form&#39;][formId][&#39;down&#39;][&#39;formInfo&#39;]</code>之后调用该方法。</p>
+<blockquote><p>/*</p>
+<p> *style:submit-&gt;数据上传。save-&gt;数据保存到草稿箱</p>
+<p> *mustInputDialog必填项页面处理函数,如果没有就调用系统的formMustInputError函数</p>
+<p> *maybeInputDialog选填项页面处理函数，如果没有就调用系统的formMaybeInputError函数</p>
+<p> *err错误处理函数</p>
+<p> */</p>
+</blockquote>
 <h5>5.<code>submit(formId, errfun)</code></h5>
 <p>提交form,调用前后后调用beforSubmit，afterSubmit生命周期方法</p>
+<blockquote><p>/**</p>
+<p> * 整体提交列表中的所有form</p>
+<p> * @param {*} listId </p>
+<p> * @param {*} formId </p>
+<p> * @param {*} err </p>
+<p> */</p>
+</blockquote>
 <h5>6.<code>submitListForm(listId,formId,failCallback,err)</code></h5>
 <p>整体提交列表中的所有form</p>
+<blockquote><p>/**</p>
+<p> * 提交时检验必填项,将所有的没有填写的必填项返回</p>
+<p> * @param {*} formId</p>
+<p> */</p>
+</blockquote>
 <h5>8.<code>checkMustInput(formId)</code></h5>
 <p>提交时检验必填项,将所有的没有填写的必填项返回</p>
+<blockquote><p>/**</p>
+<p> * 提交时检验可填项项,将所有的没有填写的可填项返回</p>
+<p> * @param {*} formId</p>
+<p> */</p>
+</blockquote>
 <h5>9.<code>checkMaybeInput(formId)</code> </h5>
 <p>提交时检验可填项项,将所有的没有填写的可填项返回</p>
 <p>&nbsp;</p>
-<h3>接口方法：</h3>
+<h3>三、接口方法：</h3>
 <h5>1.<code>saveOrUpdate(classId, data, callback)</code></h5>
 <p>保存或者更新，data.id存在时是更新</p>
 <pre><code class='language-javascript' lang='javascript'>// 更新表单的示例
@@ -226,7 +524,7 @@ delAllTableByCondition(tableDatasOfDelParma, function callback() {
 </code></pre>
 <h5>10.<code>deleteInfoByIds(classid, infoids, success, err)</code></h5>
 <p>根据classid和infoids批量删除信息</p>
-<h3>公共方法（常用的）:</h3>
+<h3>四、公共方法（常用的）:</h3>
 <h4>字符串方法：</h4>
 <h5>1.<code>trim(str, type)</code></h5>
 <p>去除空格 type 1-所有空格 2-前后空格 3-前空格 4-后空格</p>
