@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="Cache" content="no-cache">
+    <title>Vlist</title>
+    <script src="https://cdn.bootcss.com/zepto/1.2.0/zepto.min.js"></script>
+    <script src="https://cdn.bootcss.com/vConsole/3.2.2/vconsole.min.js"></script>
+</head>
+
+<body>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #eee;
+        }
+
+        .list {
+            width: 100%;
+            box-sizing: border-box;
+            overflow-y: scroll;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            /*兼容ios 否则滑动不流畅*/
+        }
+
+        .list table {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            list-style: none;
+            position: relative;
+        }
+
+        .list table tr {
+            position: relative;
+        }
+
+        .list .item {
+            background: white;
+            width: 96%;
+            margin-left: 2%;
+            height: 170px;
+            margin-top: 10px;
+            box-sizing: border-box;
+            position: relative;
+            border-radius: 8px;
+        }
+
+        .list .item img {
+            width: 160px;
+            height: 160px;
+            margin: 5px;
+            float: left;
+        }
+
+        .list ul li .item .right {
+            height: 170px;
+            margin-left: 170px;
+            overflow: hidden;
+        }
+
+        .list ul li .item .right .title {
+            font-size: 16px;
+            color: #3e3936;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .list ul li .item .right .price {
+            color: #c9040d;
+            font-size: 14px;
+            position: absolute;
+            top: 123px;
+            left: 170px;
+        }
+
+        .list ul li .item .right .buy {
+            width: 80px;
+            height: 30px;
+            background: #c9040d;
+            text-align: center;
+            line-height: 30px;
+            font-size: 12px;
+            color: white;
+            border-radius: 40px;
+            position: absolute;
+            right: 10px;
+            top: 120px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+            background-color: #fff;
+        }
+
+        ::-webkit-scrollbar:hover {
+            background-color: #eee;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #ccc;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #aaa;
+        }
+
+        ::-webkit-scrollbar-thumb:active {
+            background-color: #888;
+        }
+
+        .loading {
+            text-align: center;
+            width: 100%;
+            font-size: 12px;
+            height: 30px;
+            line-height: 30px;
+        }
+    </style>
+    <div class="list" id="list">
+        <table>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script src="./vlist-vertical.js"></script>
+    <script type="text/javascript">
+        // init vConsole
+        var vConsole = new VConsole();
+        var pageIndex = 1;
+        function load() {
+            let url = `http://scm.tongling.com:8080/tonglingtest/pub/admin/information/Infohtml/findFrontInfoTempList.do`;
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    userid: '0ce8694e-706a-488a-8bb0-4a5207ea340f',
+                    orgid: '14b8c8f3-7338-4d4c-a924-37c3db7a7fb5',
+                    classid: 'bad8fa0b-7cab-410e-8fa1-b16df19d6032',
+                    searchValue: '2d4655e9-2894-48c5-8d9c-b9c2fcd13b0a',
+                    searchField: 'area',
+                    searchCondition: 'and$$$=',
+                    num: 90000,
+                    page: 1,
+                },
+                async: false,
+                dataType: 'json',
+                success: function (resp) {
+                    let data = resp.infos;
+                    if (pageIndex == 1) {
+                        vlist = new Vlist({
+                            itemHeight: 40,
+                            container: document.querySelector("#list"),
+                            // maxHeight: document.documentElement.clientHeight,
+                            maxHeight: 500,
+                            // loadData: load,
+                            initData: data.concat(data, data, data, data),
+                            render: function (itemData, index) {
+                                return `
+                                <td>${index}</td>
+                                <td><input type="text" name="TLComponentCode" value="${itemData.TLComponentCode}"></td>
+                                <td><input type="text" name="companyName" value="${itemData.companyName}" disabled="disabled" show="stateNonEditable"></td>
+                                <td><input type="text" name="purchasingMode" value="${itemData.purchasingMode}" disabled="disabled" show="stateNonEditable"></td>
+                                <td><input type="text" name="YTotalRebate" value="${itemData.YTotalRebate}"></td>
+                                <td><input type="text" name="status" value="${itemData.status}" ></td>
+                                `
+                            }
+                        });
+                    } else {
+                        vlist.addData(data);
+                    }
+                    pageIndex++;
+                }
+            });
+        }
+
+        load();
+
+    </script>
+
+    <script>
+        //模板方法
+        function temC(val, tem, index) {
+            var item = tem.replace(/{{(.)+?}}/g, function (match) {
+                var key = match.substring(2, match.length - 2).trim();
+                var info = listInfos[i];
+                val = info[key]
+                return val ? val : '';
+            });
+        }
+    </script>
+</body>
+
+</html>
