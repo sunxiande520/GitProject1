@@ -61,6 +61,7 @@
     <script>
         d3.csv('./data/films.csv', function (data,index) {
             console.log(data)
+            return data
             // Do something with the data
         }).then(function(arr){
             console.log(arr)
