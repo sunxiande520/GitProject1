@@ -59,9 +59,11 @@
 
     <script src="../d3.min.js"></script>
     <script>
-        d3.csv('./data/films.csv', function (err, data) {
+        d3.csv('./data/films.csv', function (data,index) {
             console.log(data)
             // Do something with the data
+        }).then(function(arr){
+            console.log(arr)
         })
     </script>
     <script>
