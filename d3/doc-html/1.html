@@ -59,6 +59,12 @@
 
     <script src="../d3.min.js"></script>
     <script>
+        d3.csv('./data/films.csv', function (err, data) {
+            console.log(data)
+            // Do something with the data
+        })
+    </script>
+    <script>
 
         var names = ['Andy', 'Beth', 'Craig', 'Diane', 'Evelyn', 'Fred', 'Georgia', 'Harry', 'Isabel', 'John'];
         var myData = [];
